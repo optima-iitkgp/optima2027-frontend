@@ -421,16 +421,6 @@ const MagneticFilterPill = ({ filter, isActive, onClick }) => {
           : `border-white/10 bg-white/[0.04] text-white/70 hover:text-white ${theme.hoverBorder}`
       }`}
     >
-      {/* Active Glowing Pulse Dot */}
-      {isActive ? (
-        <span className="relative flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${theme.dotClass} opacity-75`}></span>
-          <span className={`relative inline-flex rounded-full h-2 w-2 ${theme.dotClass}`}></span>
-        </span>
-      ) : (
-        <span className="h-1.5 w-1.5 rounded-full bg-white/30 group-hover:bg-white transition-colors" />
-      )}
-
       <span>{filter.label}</span>
 
       {/* Item Count Chip */}
@@ -534,9 +524,8 @@ const MediaPlate = ({
         {/* Top Floating Category Badge */}
         <div className="absolute top-3 left-3 z-20 pointer-events-none">
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border text-[11px] font-semibold tracking-wide shadow-md ${theme.badgeClass}`}
+            className={`inline-flex items-center px-2.5 py-1 rounded-full backdrop-blur-md border text-[11px] font-semibold tracking-wide shadow-md ${theme.badgeClass}`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${theme.dotClass}`} />
             {item.categoryLabel}
           </span>
         </div>
@@ -590,12 +579,10 @@ const LightboxModal = ({ item, onClose, onPrev, onNext }) => {
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-white/[0.03]">
           <div className="flex items-center gap-2.5">
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-semibold ${theme.badgeClass}`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs font-semibold ${theme.badgeClass}`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${theme.dotClass}`} />
               {item.categoryLabel}
             </span>
-
           </div>
 
           <button
@@ -644,10 +631,19 @@ const LightboxModal = ({ item, onClose, onPrev, onNext }) => {
 const Gallery = ({ standalone = false }) => {
   const sectionRef = useRef(null);
   const containerRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [hoveredId, setHoveredId] = useState(null);
   const [activeModalItem, setActiveModalItem] = useState(null);
+
+  const scrollHorizontally = (direction) => {
+    playClickTick();
+    if (scrollRef.current) {
+      const scrollAmount = direction === "left" ? -450 : 450;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   // Scroll Velocity Physics Setup
   const { scrollYProgress } = useScroll({
@@ -733,7 +729,6 @@ const Gallery = ({ standalone = false }) => {
 
           {/* Quick Counter Readout */}
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/10 text-xs font-mono text-white/60">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400 font-bold">25 Photos</span>
             <span className="text-white/20">|</span>
             <span>4 Categories</span>
@@ -743,34 +738,64 @@ const Gallery = ({ standalone = false }) => {
         {/* ========================================== */}
         {/* COLORFUL CATEGORY FILTERS                  */}
         {/* ========================================== */}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          {FILTERS.map((f) => (
-            <MagneticFilterPill
-              key={f.id}
-              filter={f}
-              isActive={activeFilter === f.id}
-              onClick={setActiveFilter}
-            />
-          ))}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {FILTERS.map((f) => (
+              <MagneticFilterPill
+                key={f.id}
+                filter={f}
+                isActive={activeFilter === f.id}
+                onClick={setActiveFilter}
+              />
+            ))}
+          </div>
+
+          {/* Left / Right Scroll Navigation Arrows */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollHorizontally("left")}
+              className="w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-white/15 text-white flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Scroll photos left"
+            >
+              <ChevronLeft className="w-5 h-5 text-zinc-300 hover:text-white" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollHorizontally("right")}
+              className="w-9 h-9 rounded-full border border-white/10 bg-white/5 hover:bg-white/15 text-white flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Scroll photos right"
+            >
+              <ChevronRight className="w-5 h-5 text-zinc-300 hover:text-white" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ========================================== */}
-      {/* RESPONSIVE MASONRY GRID                    */}
+      {/* HORIZONTAL LEFT / RIGHT SCROLLABLE ROW     */}
       {/* ========================================== */}
-      <div ref={containerRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+        <div
+          ref={scrollRef}
+          className="flex gap-5 overflow-x-auto pb-6 pt-2 scrollbar-none snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
-              <MediaPlate
+              <div
                 key={item.id}
-                item={item}
-                isTarget={hoveredId === item.id}
-                isDimmed={hoveredId !== null && hoveredId !== item.id}
-                onHoverStart={(id) => setHoveredId(id)}
-                onHoverEnd={() => setHoveredId(null)}
-                onClick={handleOpenModal}
-              />
+                className="flex-shrink-0 w-72 sm:w-80 md:w-96 snap-start"
+              >
+                <MediaPlate
+                  item={item}
+                  isTarget={hoveredId === item.id}
+                  isDimmed={hoveredId !== null && hoveredId !== item.id}
+                  onHoverStart={(id) => setHoveredId(id)}
+                  onHoverEnd={() => setHoveredId(null)}
+                  onClick={handleOpenModal}
+                />
+              </div>
             ))}
           </AnimatePresence>
         </div>

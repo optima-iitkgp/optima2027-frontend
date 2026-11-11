@@ -165,16 +165,6 @@ const Hero = () => {
             </Link>
 
             <a
-              href="https://unstop.com/college-fests/optima-2027-indian-institute-of-technology-iit-kharagpur-260905"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-4 py-2.5 rounded-none border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-xs tracking-wider transition-all gap-2"
-            >
-              <span>Unstop</span>
-              <ArrowUpRight className="w-3.5 h-3.5 opacity-70" />
-            </a>
-
-            <a
               href="#about"
               onClick={(e) => {
                 e.preventDefault();

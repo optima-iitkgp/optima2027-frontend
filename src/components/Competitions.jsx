@@ -94,7 +94,6 @@ const Competitions = () => {
                   : "text-text-secondary hover:text-white hover:bg-white/5"
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
               <span>Upcoming</span>
             </button>
 
@@ -195,8 +194,7 @@ const Competitions = () => {
               </div>
 
               {/* Status Pill */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full border border-accent-brand/30 bg-accent-brand/10 text-xs font-mono font-semibold tracking-wider text-accent-brand">
-                <span className="w-2 h-2 rounded-full bg-accent-brand animate-ping" />
+              <div className="inline-flex items-center px-3.5 py-1 mb-4 rounded-full border border-accent-brand/30 bg-accent-brand/10 text-xs font-mono font-semibold tracking-wider text-accent-brand">
                 <span>Competitions Announcing Soon</span>
               </div>
 
@@ -234,27 +232,6 @@ const Competitions = () => {
                 >
                   <span>Explore Past Year Competitions</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={handleNotifyMe}
-                  className={`w-full sm:w-auto px-6 py-3 text-xs font-mono uppercase tracking-wider flex items-center justify-center gap-2 transition-all border ${
-                    notified
-                      ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-300"
-                      : "bg-white/5 hover:bg-white/10 border-white/15 text-white"
-                  }`}
-                >
-                  {notified ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Alert Saved!</span>
-                    </>
-                  ) : (
-                    <>
-                      <BellRing className="w-4 h-4 text-accent-brand" />
-                      <span>Notify Me When Live</span>
-                    </>
-                  )}
                 </button>
               </div>
 

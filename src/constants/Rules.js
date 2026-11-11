@@ -31,7 +31,7 @@ export const payment = [
 		text: "You can pay through UPI, by scanning the QR code or on the given UPI ID. Click on 'Pay Here' to proceed with the payment.",
 	},
 	{
-		text: " Participants are requested to wait for 48 hours for confirmation of payment status. In case the payment status does not reflect, contact us at swetank@optima.org.in.",
+		text: "Participants are requested to wait for 48 hours for confirmation of payment status. In case the payment status does not reflect, contact us at hemakiran@optima.org.in.",
 	},
 	{
 		text: "After the transactions are completed, the status will be updated on the profile within 48 hours.",

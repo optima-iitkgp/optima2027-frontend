@@ -28,19 +28,13 @@ const TimeToggleHUD = ({ activeTab, onToggle }) => {
   const tabs = [
     {
       id: "2027",
-      label: "2027 ACTIVE",
-      subtext: "CURRENT CORE",
-      count: CoreHeads.length,
-      badgeColor: "bg-emerald-400",
+      label: "2027",
       activeBorder: "border-cyan-400/80",
       glowColor: "shadow-[0_0_25px_rgba(0,240,255,0.4)]",
     },
     {
       id: "2025",
-      label: "2025 ARCHIVE",
-      subtext: "HISTORIC RECORDS",
-      count: Executives.length + PreviousYearHeads.length,
-      badgeColor: "bg-orange-400",
+      label: "2025",
       activeBorder: "border-[#ff4500]/80",
       glowColor: "shadow-[0_0_25px_rgba(255,69,0,0.45)]",
     },
@@ -61,7 +55,7 @@ const TimeToggleHUD = ({ activeTab, onToggle }) => {
               onToggle(tab.id);
             }}
             data-cursor="pointer"
-            className={`relative px-6 py-2.5 rounded-full font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-300 flex items-center gap-3 select-none z-10 ${
+            className={`relative px-6 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider transition-colors duration-300 flex items-center justify-center select-none z-10 ${
               isActive ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
@@ -78,33 +72,8 @@ const TimeToggleHUD = ({ activeTab, onToggle }) => {
               />
             )}
 
-            {/* Live Indicator LED */}
-            <span className="relative flex h-2 w-2 z-10">
-              {isActive && (
-                <span
-                  className={`animate-ping absolute inline-flex h-full w-full rounded-full ${tab.badgeColor} opacity-75`}
-                />
-              )}
-              <span
-                className={`relative inline-flex rounded-full h-2 w-2 ${
-                  isActive ? tab.badgeColor : "bg-white/20"
-                }`}
-              />
-            </span>
-
             {/* Tab Title */}
             <span className="relative z-10 font-bold">{tab.label}</span>
-
-            {/* Member Count Pill */}
-            <span
-              className={`relative z-10 px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${
-                isActive
-                  ? "bg-white/15 text-white border border-white/20"
-                  : "bg-white/5 text-white/40"
-              }`}
-            >
-              {tab.count}
-            </span>
           </button>
         );
       })}
@@ -307,10 +276,6 @@ const Team = () => {
             <h2 className="text-3xl md:text-5xl font-bold font-sans tracking-tight text-white">
               Our Team
             </h2>
-
-            <p className="text-sm md:text-base text-white/60 font-sans mt-3 max-w-2xl">
-              The dedicated student coordinators and domain heads organizing Optima 2027 at IIT Kharagpur.
-            </p>
           </div>
 
           {/* Temporal Toggle HUD Switch */}
@@ -413,7 +378,6 @@ const Team = () => {
               <div className="my-14 flex items-center justify-center gap-4">
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/15 to-orange-500/40" />
                 <div className="px-4 py-1 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-xl font-mono text-[11px] text-white/60 uppercase tracking-widest flex items-center gap-2 shadow-[0_0_15px_rgba(255,107,0,0.15)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
                   <span>Team Optima 2025</span>
                 </div>
                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-white/15 to-orange-500/40" />

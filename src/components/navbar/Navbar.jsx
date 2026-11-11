@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -158,13 +158,24 @@ const Navbar = () => {
             }`}
           />
 
-          {/* Morphing Ribbon */}
-          <div
-            className={`relative flex items-center justify-between gap-2 xl:gap-4 transition-all duration-300 ease-out will-change-[max-width,padding,border-radius] ${
-              isAtTop
-                ? "w-full max-w-7xl px-5 xl:px-8 py-2.5 xl:py-3.5 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-                : "w-full max-w-[1140px] px-4 xl:px-5 py-2 rounded-full bg-[#050505]/92 backdrop-blur-xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.85)]"
-            }`}
+          {/* Morphing Ribbon with Butter-Smooth Corner & Scale Transition */}
+          <motion.div
+            initial={false}
+            animate={{
+              maxWidth: isAtTop ? "1280px" : "1140px",
+              borderRadius: isAtTop ? "16px" : "9999px",
+              paddingTop: isAtTop ? "12px" : "8px",
+              paddingBottom: isAtTop ? "12px" : "8px",
+              paddingLeft: isAtTop ? "28px" : "20px",
+              paddingRight: isAtTop ? "28px" : "20px",
+              backgroundColor: isAtTop ? "rgba(0, 0, 0, 0.55)" : "rgba(5, 5, 5, 0.94)",
+              borderColor: isAtTop ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.16)",
+            }}
+            transition={{
+              duration: 0.45,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="relative flex items-center justify-between gap-2 xl:gap-4 backdrop-blur-xl border shadow-[0_12px_40px_rgba(0,0,0,0.85)] w-full"
           >
             {/* Left: Brand Logo */}
             <div className="flex items-center pr-1 xl:pr-2 flex-shrink-0">
@@ -221,7 +232,7 @@ const Navbar = () => {
               )}
               <RegisterButton />
             </div>
-          </div>
+          </motion.div>
         </div>
       </header>
 

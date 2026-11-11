@@ -1,406 +1,31 @@
-import React, { useState, useRef } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useVelocity,
-  useTransform,
-  useSpring,
-} from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { guests, guestLectures } from "../constants/GuestLectures.js";
 import {
-  ArrowUpRight,
+  Calendar,
+  MapPin,
+  Clock,
+  ArrowRight,
   Linkedin,
   Award,
-  ExternalLink,
-  ChevronRight,
+  History,
+  Mic,
 } from "lucide-react";
-import { useTextScramble } from "../hooks/useTextScramble";
-import { playHoverChirp, playClickTick } from "../utils/cyberAudio";
+import { playClickTick } from "../utils/cyberAudio";
 
-// Flagship 5 Headliners explicitly specified in the directive
-const flagshipSpeakers = [
-  {
-    id: "flagship-nayak",
-    name: "Shri S K Nayak",
-    designation: "Director of PXE Lab, DRDO",
-    company: "DRDO",
-    badge: "CHIEF GUEST",
-    topic: "Keynote Address: Strategic Defense & Operations Systems",
-    linkedin:
-      "https://www.drdo.gov.in/drdo/labs-and-establishments/proof-experimental-establishment-pxe",
-    imgUrl: guests[0]?.img,
-    isKeynote: true,
-  },
-  {
-    id: "flagship-chatterjee",
-    name: "Shri Sanjoy Chatterjee",
-    designation: "Chair of NASSCOM, Regional Council-East",
-    company: "NASSCOM",
-    badge: "GUEST OF HONOR",
-    topic: "Eastern Region Tech Ecosystem & Digital Optimization",
-    linkedin: "https://www.linkedin.com/in/sanjoynet/",
-    imgUrl: guests[1]?.img,
-    isKeynote: true,
-  },
-  {
-    id: "flagship-rajesh",
-    name: "Dr. Rajesh Kumar",
-    designation: "Director, Business Analytics",
-    company: "Philips",
-    badge: "EXECUTIVE LECTURE",
-    topic: "Driving Supply Chain digital transformation through data Analytics",
-    linkedin: "https://www.linkedin.com/in/dr-rajesh-kumar-0b86a38/",
-    imgUrl: guestLectures.find((l) => l.name === "Dr. Rajesh Kumar")?.imgUrl,
-    isKeynote: false,
-  },
-  {
-    id: "flagship-arvind",
-    name: "Dr. Arvind Kumar",
-    designation: "Senior Advisor",
-    company: "Optym",
-    badge: "OPERATIONS ARCHITECT",
-    topic: "Analytics for Electric Vehicles (EVs) and Related Domains",
-    linkedin: "https://www.linkedin.com/in/arviphd/",
-    imgUrl: guestLectures.find((l) => l.name === "Dr. Arvind Kumar")?.imgUrl,
-    isKeynote: false,
-  },
-  {
-    id: "flagship-nitish",
-    name: "Nitish Kumar",
-    designation: "Head Analyst, Manufacturing",
-    company: "Tata Steel",
-    badge: "SYSTEMS INTELLIGENCE",
-    topic: "AI Journey & Plant Digital Twins at Tata Steel",
-    linkedin:
-      "https://www.linkedin.com/in/nitish-kumar-b384b3169",
-    imgUrl: guestLectures.find((l) => l.name === "Nitish Kumar")?.imgUrl,
-    isKeynote: false,
-  },
-];
-
-// Additional faculty & researchers to preserve all dataset entries
-const facultySpeakers = guestLectures
-  .filter(
-    (l) =>
-      l.name !== "Dr. Rajesh Kumar" &&
-      l.name !== "Dr. Arvind Kumar" &&
-      l.name !== "Nitish Kumar"
-  )
-  .map((l) => ({
-    id: `faculty-${l.id}`,
-    name: l.name,
-    designation: l.designation,
-    company: l.company,
-    badge: "RESEARCH SCHOLAR",
-    topic: l.topic,
-    linkedin: l.linkedin,
-    imgUrl: l.imgUrl,
-    isKeynote: false,
-  }));
-
-const ACCORDION_SPRING = { stiffness: 120, damping: 20 };
-
-/**
- * Individual Accordion Speaker Slice
- * - Inactive: slender, vertical frosted-glass slice with brooding grayscale portrait
- * - Hover / Active: fluid layout expansion, volumetric light sweep, crossfade to vibrant color,
- *   subtle cyber mainframe particle overlay, holographic glass pill badge, and 200ms cryptographic name scramble.
- */
-const MobileSpeakerCard = ({ speaker, index }) => {
-  return (
-    <div className="relative rounded-xl overflow-hidden border border-white/10 bg-[#07070c] p-4 flex flex-col justify-between transition-all hover:border-cyan-400/40">
-      <div className="flex items-start gap-3.5">
-        <div className="relative w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/10">
-          <img
-            src={speaker.imgUrl}
-            alt={speaker.name}
-            className="w-full h-full object-cover object-top"
-            loading="lazy"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-1 mb-1">
-            <span className="font-mono text-[10px] text-accent-brand font-semibold uppercase">
-              {speaker.badge}
-            </span>
-            <span className="font-mono text-[10px] text-zinc-500">
-              0{index + 1}
-            </span>
-          </div>
-          <h4 className="font-display text-base font-bold text-white uppercase tracking-tight truncate">
-            {speaker.name}
-          </h4>
-          <p className="font-mono text-[11px] text-zinc-400 truncate">
-            {speaker.designation} {speaker.company ? `· ${speaker.company}` : ""}
-          </p>
-          {speaker.topic && (
-            <p className="mt-1 text-xs text-zinc-300 font-sans line-clamp-2 italic">
-              &ldquo;{speaker.topic}&rdquo;
-            </p>
-          )}
-        </div>
-      </div>
-      {speaker.linkedin && (
-        <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-end">
-          <a
-            href={speaker.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={playClickTick}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 font-mono text-[10px] font-semibold tracking-wider hover:bg-cyan-500/20 transition-all"
-          >
-            <Linkedin className="w-3 h-3" />
-            <span>LINKEDIN</span>
-            <ArrowUpRight className="w-2.5 h-2.5" />
-          </a>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const AccordionSpeakerCard = ({
-  speaker,
-  index,
-  isActive,
-  onActivate,
-}) => {
-  const { text: scrambledName, trigger: triggerScramble } = useTextScramble(
-    speaker.name,
-    200
-  );
-
-  const handleMouseEnter = () => {
-    onActivate();
-    triggerScramble();
-    playHoverChirp();
-  };
-
-  return (
-    <motion.div
-      layout
-      transition={{
-        layout: { type: "spring", ...ACCORDION_SPRING },
-      }}
-      onMouseEnter={handleMouseEnter}
-      onClick={handleMouseEnter}
-      className={`relative rounded-2xl overflow-hidden cursor-pointer select-none border transition-all duration-500 flex flex-col justify-between ${
-        isActive
-          ? "flex-[3.5] lg:flex-[4] border-cyan-400/50 shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
-          : "flex-1 border-white/10 hover:border-white/20 bg-white/[0.02]"
-      }`}
-      style={{
-        minHeight: "100%",
-      }}
-    >
-      {/* 
-        Background Portrait with Color-Bleed Shader Effect
-        Default: Grayscale, dark, brooding.
-        Active: Smooth crossfade into high-contrast vibrant color.
-      */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
-        <motion.img
-          layout="position"
-          src={speaker.imgUrl}
-          alt={speaker.name}
-          className={`w-full h-full object-cover object-top sm:object-center transition-all duration-700 ease-out ${
-            isActive
-              ? "grayscale-0 contrast-110 brightness-105 saturate-125 scale-100"
-              : "grayscale contrast-125 brightness-50 opacity-50 scale-105"
-          }`}
-        />
-
-        {/* Ambient Dark Vignette Mask */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-500 ${
-            isActive
-              ? "bg-gradient-to-t from-[#030305] via-[#030305]/60 to-transparent"
-              : "bg-black/60"
-          }`}
-        />
-
-        {/* Cyber-Overlay: Digital Mainframe Particle/CAD Grid (Active State) */}
-        {isActive && (
-          <div className="absolute inset-0 bg-cad-grid opacity-30 pointer-events-none mix-blend-screen" />
-        )}
-
-        {/* Volumetric Light Sweep across the portrait on expansion */}
-        <AnimatePresence>
-          {isActive && (
-            <motion.div
-              initial={{ x: "-100%", opacity: 0 }}
-              animate={{ x: "200%", opacity: 0.6 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-cyan-400/25 to-transparent skew-x-12 pointer-events-none z-10"
-            />
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* 
-        INACTIVE STATE: Slender Vertical Slice Content
-      */}
-      {!isActive && (
-        <div className="relative z-20 h-full w-full p-4 flex flex-row lg:flex-col justify-between items-center pointer-events-none">
-          <span className="font-mono text-[11px] text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
-            0{index + 1}
-          </span>
-
-          {/* Vertical Name Bar on Desktop */}
-          <div className="hidden lg:flex items-center justify-center flex-1 my-6">
-            <span
-              style={{ writingMode: "vertical-rl" }}
-              className="font-display text-sm font-bold uppercase tracking-wider text-zinc-400 group-hover:text-white transition-colors rotate-180 truncate max-h-72"
-            >
-              {speaker.name}
-            </span>
-          </div>
-
-          {/* Horizontal fallback for mobile compact slice */}
-          <div className="lg:hidden flex items-center gap-2">
-            <span className="font-display text-sm font-bold uppercase text-zinc-300">
-              {speaker.name}
-            </span>
-          </div>
-
-          <div className="w-2 h-2 rounded-full bg-white/20" />
-        </div>
-      )}
-
-      {/* 
-        ACTIVE STATE: Full Spatial Layout with Kinetic Typography & Floating Holographic Badge
-      */}
-      {isActive && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.1 }}
-          className="relative z-20 h-full p-6 sm:p-8 flex flex-col justify-between"
-          style={{ perspective: "1000px" }}
-        >
-          {/* Top Row: Index + Floating Holographic Pill Badge */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-mono text-xs text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full">
-              SYS.MINDS // 0{index + 1}
-            </span>
-
-            {/* Glowing Holographic Glass-Pill Badge (Levitates on Z-axis) */}
-            <motion.div
-              animate={{
-                y: [0, -3, 0],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 2.8,
-                ease: "easeInOut",
-              }}
-              style={{ transform: "translateZ(25px)" }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-[#ff4500]/25 via-cyan-400/20 to-[#ff4500]/25 border border-[#ff4500]/50 backdrop-blur-md shadow-[0_0_15px_rgba(255,69,0,0.4)]"
-            >
-              <Award className="w-3.5 h-3.5 text-[#ff4500]" />
-              <span className="font-mono text-[10px] font-bold text-white tracking-widest uppercase">
-                {speaker.badge}
-              </span>
-            </motion.div>
-          </div>
-
-          {/* Bottom Card Content: Scrambled Name, Designation, Topic, and LinkedIn CTA */}
-          <div className="space-y-4 pt-12">
-            <div className="space-y-1.5">
-              {/* Cryptographic Scrambled Name */}
-              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase text-white tracking-tight leading-tight">
-                {scrambledName}
-              </h3>
-
-              <p className="font-mono text-xs sm:text-sm text-[#ff4500] font-semibold">
-                {speaker.designation}{" "}
-                {speaker.company ? (
-                  <span className="text-zinc-400 font-normal">
-                    &middot; {speaker.company}
-                  </span>
-                ) : null}
-              </p>
-            </div>
-
-            {/* Lecture Topic Banner */}
-            {speaker.topic && (
-              <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md max-w-xl">
-                <span className="font-mono text-[9px] text-cyan-400 uppercase tracking-widest block mb-1">
-                  Lecture Topic
-                </span>
-                <p className="font-sans text-xs sm:text-sm text-zinc-200 italic leading-snug">
-                  &ldquo;{speaker.topic}&rdquo;
-                </p>
-              </div>
-            )}
-
-            {/* Action CTA Row */}
-            <div className="pt-2 flex items-center gap-3">
-              {speaker.linkedin && (
-                <a
-                  href={speaker.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    playClickTick();
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-400/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-mono text-xs font-semibold tracking-wider transition-all duration-200 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]"
-                >
-                  <Linkedin className="w-3.5 h-3.5" />
-                  <span>CONNECT ON LINKEDIN</span>
-                  <ArrowUpRight className="w-3 h-3 text-cyan-400" />
-                </a>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
-
-/**
- * THE MINDS // GUEST LECTURES (The Holographic Accordion)
- */
 const GuestLecture = () => {
-  const containerRef = useRef(null);
-  const [activeTab, setActiveTab] = useState("flagship"); // "flagship" | "faculty"
-  const [activeSpeakerId, setActiveSpeakerId] = useState(
-    flagshipSpeakers[0].id
-  );
+  const [activeTab, setActiveTab] = useState("upcoming"); // "upcoming" | "2025"
 
-  const activeRoster =
-    activeTab === "flagship" ? flagshipSpeakers : facultySpeakers;
+  // Chief Guest & Guest of Honor (separate)
+  const chiefGuest = guests[0];
+  const guestOfHonor = guests[1];
 
-  // Scroll tracking for magnetic velocity indicator
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-  const smoothVelocity = useSpring(scrollVelocity, {
-    stiffness: 180,
-    damping: 24,
-  });
-
-  // Vertical data particle travel along track
-  const particleY = useTransform(scrollYProgress, [0, 1], ["0%", "85%"]);
-
-  // Fade out indicator during extreme high-speed scrolling
-  const indicatorOpacity = useTransform(
-    smoothVelocity,
-    [-1800, -300, 0, 300, 1800],
-    [0.2, 0.9, 1, 0.9, 0.2]
-  );
+  // All other guest lecture speakers (rest same way)
+  const regularSpeakers = guestLectures;
 
   return (
     <section
       id="speakers"
-      ref={containerRef}
       className="relative w-full pt-16 sm:pt-18 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 bg-[#030305] border-b border-white/5 overflow-hidden"
     >
       {/* Background Ambient Atmosphere */}
@@ -408,114 +33,304 @@ const GuestLecture = () => {
       <div className="pointer-events-none absolute bottom-10 -left-40 w-96 h-96 bg-[#ff4500]/10 rounded-full blur-[140px]" />
       <div className="absolute inset-0 bg-cad-grid opacity-15 pointer-events-none" />
 
-      {/* 
-        Sleek Vertical Magnetic Scroll-Indicator (Replaced the clunky box)
-        Positioned seamlessly to the right side of the section, fading out on high scroll velocity
-      */}
-      <motion.div
-        style={{ opacity: indicatorOpacity }}
-        className="hidden xl:flex flex-col items-center gap-3 absolute right-6 lg:right-8 top-1/2 -translate-y-1/2 z-30 pointer-events-none"
-      >
-        <span className="font-mono text-[9px] text-zinc-500 uppercase tracking-widest -rotate-90 origin-center mb-8 whitespace-nowrap">
-          TIMELINE_AXIS
-        </span>
-
-        {/* Thin glowing track */}
-        <div className="relative w-[2px] h-40 bg-white/10 rounded-full overflow-hidden">
-          {/* Moving cyan data particle */}
-          <motion.div
-            style={{ top: particleY }}
-            className="absolute left-1/2 -translate-x-1/2 w-1.5 h-4 rounded-full bg-cyan-400 shadow-[0_0_14px_3px_#00f0ff]"
-          />
-        </div>
-
-        <span className="font-mono text-[8px] text-cyan-400/80 mt-2">
-          SYS.NAV
-        </span>
-      </motion.div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header & Roster Switcher */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div className="space-y-3">
-
-
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold uppercase text-white tracking-tight">
-              Guest Lectures
-            </h2>
-
-            <p className="font-sans text-xs sm:text-sm text-zinc-400 max-w-xl leading-relaxed">
-              Global defense leaders, NASSCOM executives, and digital architects
-              driving AI, operations research, and enterprise systems engineering.
+        {/* Section Header & Tab Controls */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-6 border-b border-white/10">
+          <div>
+            <div className="section-header mb-3">
+              <span className="section-header-square" />
+              <h2 className="section-header-text text-xl sm:text-2xl lg:text-3xl">
+                {activeTab === "upcoming" ? "Guest Lectures" : "2025 Guest Lectures"}
+              </h2>
+            </div>
+            <p className="text-text-secondary text-sm max-w-2xl font-sans leading-relaxed">
+              {activeTab === "upcoming"
+                ? "Keynotes and executive addresses by global leaders, defense technologists, and operations researchers."
+                : "Archive of eminent leaders and researchers who delivered keynote addresses and executive talks at Optima."}
             </p>
           </div>
 
-          {/* Roster Category Toggle Pills */}
-          <div className="flex flex-wrap items-center gap-2 bg-white/[0.03] border border-white/10 p-1 rounded-full">
+          {/* Clean Tab Controls */}
+          <div className="flex items-center gap-2 p-1.5 bg-bg-surface border border-border-subtle self-start md:self-end">
             <button
-              type="button"
               onClick={() => {
                 playClickTick();
-                setActiveTab("flagship");
-                setActiveSpeakerId(flagshipSpeakers[0].id);
+                setActiveTab("upcoming");
               }}
-              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-mono text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-300 ${
-                activeTab === "flagship"
-                  ? "bg-gradient-to-r from-[#ff4500] to-cyan-500 text-black shadow-lg"
-                  : "text-zinc-400 hover:text-white"
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-mono tracking-wider uppercase transition-all duration-200 ${
+                activeTab === "upcoming"
+                  ? "bg-accent-brand text-black font-bold shadow-brand-glow"
+                  : "text-text-secondary hover:text-white hover:bg-white/5"
               }`}
             >
-              FLAGSHIP HEADLINERS ({flagshipSpeakers.length})
+              <span>Upcoming</span>
             </button>
 
             <button
-              type="button"
               onClick={() => {
                 playClickTick();
-                setActiveTab("faculty");
-                setActiveSpeakerId(facultySpeakers[0].id);
+                setActiveTab("2025");
               }}
-              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-mono text-[11px] sm:text-xs font-semibold tracking-wider transition-all duration-300 ${
-                activeTab === "faculty"
-                  ? "bg-gradient-to-r from-[#ff4500] to-cyan-500 text-black shadow-lg"
-                  : "text-zinc-400 hover:text-white"
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-mono tracking-wider uppercase transition-all duration-200 ${
+                activeTab === "2025"
+                  ? "bg-accent-brand text-black font-bold shadow-brand-glow"
+                  : "text-text-secondary hover:text-white hover:bg-white/5"
               }`}
             >
-              ALL RESEARCH MINDS ({facultySpeakers.length})
+              <History className="w-3.5 h-3.5" />
+              <span>2025 Guest Lectures</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile & Tablet Card Grid (< 1024px) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 lg:hidden">
-          {activeRoster.map((speaker, index) => (
-            <MobileSpeakerCard
-              key={`mobile-${speaker.id}`}
-              speaker={speaker}
-              index={index}
-            />
-          ))}
-        </div>
+        {/* Dynamic View: Upcoming (Coming Soon) vs 2025 Guest Lectures */}
+        <AnimatePresence mode="wait">
+          {activeTab === "upcoming" ? (
+            /* ========================================================
+               UPCOMING GUEST LECTURES (COMING SOON)
+               ======================================================== */
+            <motion.div
+              key="upcoming-guest-lectures"
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -15 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="relative max-w-3xl mx-auto my-4 p-6 sm:p-10 border border-border-subtle bg-bg-surface/90 backdrop-blur-md overflow-hidden text-center shadow-[0_15px_40px_rgba(0,0,0,0.7)]"
+            >
+              {/* Subtle background glow */}
+              <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-accent-brand/10 rounded-full blur-[90px]" />
 
-        {/* 
-          Desktop: THE HOLOGRAPHIC ACCORDION (>= 1024px)
-          Interactive expanding card gallery driven by Framer Motion layout animations
-        */}
-        <div className="hidden lg:flex flex-row gap-2.5 xl:gap-3.5 h-[500px] w-full items-stretch">
-          {activeRoster.map((speaker, index) => (
-            <AccordionSpeakerCard
-              key={speaker.id}
-              speaker={speaker}
-              index={index}
-              isActive={activeSpeakerId === speaker.id}
-              onActivate={() => setActiveSpeakerId(speaker.id)}
-            />
-          ))}
-        </div>
+              {/* Central Glowing Icon */}
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-5 flex items-center justify-center">
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-accent-brand/20 to-black border border-accent-brand/60 flex items-center justify-center shadow-[0_0_20px_rgba(255,107,0,0.35)]">
+                  <Mic className="w-6 h-6 sm:w-7 sm:h-7 text-accent-brand drop-shadow-[0_0_10px_rgba(255,107,0,0.6)]" />
+                </div>
+              </div>
+
+              {/* Status Pill */}
+              <div className="inline-flex items-center px-3.5 py-1 mb-4 rounded-full border border-accent-brand/30 bg-accent-brand/10 text-xs font-mono font-semibold tracking-wider text-accent-brand">
+                <span>Guest Lectures Announcing Soon</span>
+              </div>
+
+              {/* Heading */}
+              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase text-white tracking-tight mb-3">
+                Optima 2027 Keynote Series
+              </h3>
+
+              {/* Description */}
+              <p className="font-sans text-xs sm:text-sm text-zinc-300 max-w-lg mx-auto leading-relaxed mb-6">
+                We are finalizing sessions with renowned defense directors, industry CEOs, and optimization leaders. The complete speaker lineup will be revealed soon.
+              </p>
+
+              {/* Key Highlights */}
+              <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-mono text-zinc-400 mb-6">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10">
+                  <Calendar className="w-3.5 h-3.5 text-accent-brand" />
+                  <span>March 12–14, 2027</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10">
+                  <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>IIT Kharagpur</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10">
+                  <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Keynotes &amp; Industry Panels</span>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    playClickTick();
+                    setActiveTab("2025");
+                  }}
+                  className="btn-primary px-6 py-3 text-xs tracking-wider gap-2 shadow-lg"
+                >
+                  <span>Explore 2025 Guest Lectures</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* CAD Corner Accents */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-accent-brand/40" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-accent-brand/40" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-accent-brand/40" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-accent-brand/40" />
+            </motion.div>
+          ) : (
+            /* ========================================================
+               2025 GUEST LECTURES ARCHIVE
+               ======================================================== */
+            <motion.div
+              key="archive-2025-guest-lectures"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="space-y-12"
+            >
+              {/* Dignitaries Tier: Chief Guest & Guest of Honor explicitly separated */}
+              <div>
+                <div className="mb-6 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-accent-brand" />
+                  <h3 className="text-sm font-mono uppercase tracking-widest text-accent-brand font-bold">
+                    Keynote Dignitaries
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Chief Guest */}
+                  {chiefGuest && (
+                    <div className="relative rounded-2xl border border-accent-brand/40 bg-gradient-to-br from-accent-brand/[0.08] via-black to-black p-5 sm:p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-[0_10px_35px_rgba(255,107,0,0.15)]">
+                      <div className="relative w-28 h-32 sm:w-32 sm:h-36 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-accent-brand/30">
+                        <img
+                          src={chiefGuest.img}
+                          alt={chiefGuest.name}
+                          className="w-full h-full object-cover object-top"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left min-w-0">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-accent-brand text-black text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                          {chiefGuest.title || "Chief Guest"}
+                        </span>
+                        <h4 className="text-lg sm:text-xl font-display font-extrabold text-white uppercase tracking-tight">
+                          {chiefGuest.name}
+                        </h4>
+                        <p className="text-xs sm:text-sm font-mono text-cyan-300 mt-1">
+                          {chiefGuest.designation}
+                        </p>
+                        {chiefGuest.linkedin && (
+                          <a
+                            href={chiefGuest.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white font-mono mt-3 transition-colors"
+                          >
+                            <Linkedin className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Official Profile</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Guest of Honor */}
+                  {guestOfHonor && (
+                    <div className="relative rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/[0.08] via-black to-black p-5 sm:p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-[0_10px_35px_rgba(0,240,255,0.12)]">
+                      <div className="relative w-28 h-32 sm:w-32 sm:h-36 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-cyan-400/30">
+                        <img
+                          src={guestOfHonor.img}
+                          alt={guestOfHonor.name}
+                          className="w-full h-full object-cover object-top"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left min-w-0">
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-cyan-400 text-black text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+                          {guestOfHonor.title || "Guest of Honor"}
+                        </span>
+                        <h4 className="text-lg sm:text-xl font-display font-extrabold text-white uppercase tracking-tight">
+                          {guestOfHonor.name}
+                        </h4>
+                        <p className="text-xs sm:text-sm font-mono text-cyan-300 mt-1">
+                          {guestOfHonor.designation}
+                        </p>
+                        {guestOfHonor.linkedin && (
+                          <a
+                            href={guestOfHonor.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white font-mono mt-3 transition-colors"
+                          >
+                            <Linkedin className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>LinkedIn Profile</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* All Other Guest Lectures (Rest same way) */}
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-400 font-bold">
+                    Distinguished Speakers &amp; Lecturers
+                  </h3>
+                  <span className="text-xs font-mono text-zinc-500">
+                    {regularSpeakers.length} Speakers
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {regularSpeakers.map((speaker) => (
+                    <div
+                      key={speaker.id}
+                      className="group relative rounded-xl border border-white/10 bg-[#08080f]/90 hover:border-cyan-400/40 p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+                    >
+                      <div>
+                        {/* Portrait Container */}
+                        <div className="relative w-full h-48 rounded-lg overflow-hidden bg-black/50 border border-white/10 mb-3.5">
+                          <img
+                            src={speaker.imgUrl}
+                            alt={speaker.name}
+                            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        </div>
+
+                        {/* Speaker Name */}
+                        <h4 className="font-display text-base font-bold text-white uppercase tracking-tight group-hover:text-cyan-300 transition-colors">
+                          {speaker.name}
+                        </h4>
+
+                        {/* Profession / Designation */}
+                        <p className="font-mono text-xs text-accent-brand mt-1 leading-snug">
+                          {speaker.designation}
+                        </p>
+
+                        {/* Company */}
+                        {speaker.company && (
+                          <p className="font-mono text-[11px] text-zinc-400 mt-0.5">
+                            {speaker.company}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Footer: Topic or LinkedIn Link */}
+                      <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+                        {speaker.topic ? (
+                          <span className="text-[10px] font-sans text-zinc-400 truncate pr-2 italic">
+                            &ldquo;{speaker.topic}&rdquo;
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {speaker.linkedin && (
+                          <a
+                            href={speaker.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-500 hover:text-cyan-400 transition-colors flex-shrink-0"
+                            aria-label={`${speaker.name} LinkedIn`}
+                          >
+                            <Linkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
 };
 
 export default GuestLecture;
-

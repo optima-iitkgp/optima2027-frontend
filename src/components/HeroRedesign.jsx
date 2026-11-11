@@ -250,22 +250,15 @@ function TerminalUI({ countdown }) {
 function ActionInterface() {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <a
-        href="https://unstop.com/college-fests/optima-2027-indian-institute-of-technology-iit-kharagpur-260905"
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to="/register"
         className="mechanical-btn group relative inline-flex items-center gap-2 border border-white/30 bg-transparent px-5 py-3 text-[11px] font-mono uppercase tracking-[0.2em] text-white transition-none overflow-hidden"
       >
         <span className="relative z-10 group-hover:text-black transition-none">
-          REGISTER ON UNSTOP ↗
+          REGISTER NOW ↗
         </span>
-        {/* Flood fill */}
         <span className="absolute inset-0 bg-[#FF5E00] scale-x-0 group-hover:scale-x-100 origin-left transition-none" />
-        {/* Bracket left */}
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-full border-l-2 border-t border-b border-white/50 group-hover:-translate-x-1 group-hover:border-black transition-none" />
-        {/* Bracket right */}
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-full border-r-2 border-t border-b border-white/50 group-hover:translate-x-1 group-hover:border-black transition-none" />
-      </a>
+      </Link>
 
       <button
         onClick={() => {
